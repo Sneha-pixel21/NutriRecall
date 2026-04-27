@@ -83,7 +83,7 @@ NutriRecall/
 
 ### 1. Clone the repo
 ```bash
-git clone https://github.com/YOUR_USERNAME/NutriRecall.git
+git clone https://github.com/Sneha-pixel21/NutriRecall.git
 cd NutriRecall
 ```
 
