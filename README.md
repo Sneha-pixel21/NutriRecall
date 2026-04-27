@@ -174,5 +174,5 @@ MIT — free to use, modify, and distribute.
 ---
 
 <div align="center">
-Built by <a href="https://github.com/YOUR_USERNAME">Raj</a> · Powered by Groq + ChromaDB + Streamlit
+Built by <a href="https://github.com/YOUR_USERNAME">Sneha</a> · Powered by Groq + ChromaDB + Streamlit
 </div>
