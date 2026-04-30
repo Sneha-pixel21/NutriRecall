@@ -36,12 +36,12 @@ It does this by combining a local SQLite health log with a RAG (Retrieval-Augmen
 
 | Feature | Description |
 |---------|-------------|
-| 📥 **Daily Logging** | Log weight, protein, sleep, workout with SQLite backend — duplicate entries prevented at DB level |
-| 📊 **Dashboard** | Health score gauge, Plotly charts, protein vs target line |
-| 📅 **History** | View, edit, or delete any past entry inline |
-| 🔄 **Week Compare** | Side-by-side comparison of this week vs last week across all metrics |
-| 🤖 **AI Assistant** | Full RAG pipeline — asks questions answered using your real data |
-| ⬇️ **Export** | Download all your data as CSV anytime |
+|  **Daily Logging** | Log weight, protein, sleep, workout with SQLite backend — duplicate entries prevented at DB level |
+|  **Dashboard** | Health score gauge, Plotly charts, protein vs target line |
+|  **History** | View, edit, or delete any past entry inline |
+|  **Week Compare** | Side-by-side comparison of this week vs last week across all metrics |
+|  **AI Assistant** | Full RAG pipeline — asks questions answered using your real data |
+|  **Export** | Download all your data as CSV anytime |
 
 ---
 ## Screenshots
@@ -55,12 +55,12 @@ It does this by combining a local SQLite health log with a RAG (Retrieval-Augmen
   <img src="daily log.png" width="500"/>
 </p>
 
-### 📅 Ai Interface
+### Ai Interface
 <p align="left">
   <img src="ai interface.png" width="500"/>
 </p>
 
-### ✅API vs local LLM
+### API vs local LLM
 <p align="left">
   <img src="api vs local.png" width="500"/>
 </p>
@@ -156,8 +156,8 @@ Scaled to 1–10. Protein score = actual ÷ target (weight × 1.6g/kg).
 ### 4. LLM — Switchable Backend
 | Mode | Model | How to enable |
 |------|-------|---------------|
-| ☁️ Cloud (default) | LLaMA 3.1-8b via Groq | Paste key in sidebar |
-| 💻 Local | phi3:mini via Ollama | Toggle in sidebar |
+| Cloud (default) | LLaMA 3.1-8b via Groq | Paste key in sidebar |
+| Local | phi3:mini via Ollama | Toggle in sidebar |
 
 ---
 
