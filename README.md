@@ -57,16 +57,16 @@ It does this by combining a local SQLite health log with a RAG (Retrieval-Augmen
   <img src="daily log.png" width="500"/>
 </p>
 
-### Ai Interface
-> Conversational interface with quick-start prompts and a data transparency panel showing the exact context being passed to the model.
-<p align="left">
-  <img src="ai interface.png" width="500"/>
-</p>
-
 ### API vs local LLM
 > Sidebar toggle for switching between Groq API (cloud) and Ollama (local) inference backends, with corresponding API key input field.
 <p align="left">
   <img src="api vs local.png" width="500"/>
+</p>
+
+### Ai Interface
+> Conversational interface with quick-start prompts and a data transparency panel showing the exact context being passed to the model.
+<p align="left">
+  <img src="ai interface.png" width="500"/>
 </p>
 
 ---
