@@ -1,18 +1,10 @@
 <div align="center">
 
-# 💪 NutriRecall
+# NutriRecall
 
 ### AI-Powered Personal Health Tracking & Intelligent Analysis
-
-[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io)
-[![ChromaDB](https://img.shields.io/badge/ChromaDB-Vector_DB-orange?style=for-the-badge)](https://trychroma.com)
-[![Groq](https://img.shields.io/badge/Groq-LLaMA_3.1-purple?style=for-the-badge)](https://groq.com)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
-
 **Log your health. Understand your patterns. Get personalised AI advice.**
 
-[Features](#features) • [Architecture](#architecture) • [Quick Start](#quick-start) • [AI Pipeline](#ai-pipeline) • [Screenshots](#screenshots)
 
 </div>
 
