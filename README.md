@@ -19,7 +19,7 @@ You log your weight, protein, sleep, and workouts. NutriRecall scores your lifes
 ---
 ## 🚀 Demo
 <p align="center">
-  <img src="demo/NuriRecall.gif" width="800"/>
+  <img src="assets/NutriRecall.gif" width="800"/>
 </p>
 
 ---
@@ -38,22 +38,22 @@ You log your weight, protein, sleep, and workouts. NutriRecall scores your lifes
 ## Screenshots
 ### 📊 Dashboard
 <p align="center">
-  <img src="demo/dashboard.png" width="700"/>
+  <img src="assets/dashboard.png" width="700"/>
 </p>
 
 ### 📝 Daily Logging
 <p align="center">
-  <img src="demo/daily log.png" width="700"/>
+  <img src="assets/daily log.png" width="700"/>
 </p>
 
 ### 📅 Ai Interface
 <p align="center">
-  <img src="demo/ai interface.png" width="700"/>
+  <img src="assets/ai interface.png" width="700"/>
 </p>
 
 ### ✅API vs local LLM
 <p align="center">
-  <img src="demmo/api vs local.png" width="700"/>
+  <img src="assets/api vs local.png" width="700"/>
 </p>
 
 ---
