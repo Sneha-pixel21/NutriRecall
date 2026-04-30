@@ -23,6 +23,15 @@ You log your weight, protein, sleep, and workouts. NutriRecall scores your lifes
 </p>
 
 ---
+ 
+## The Problem It Solves
+ 
+Most fitness apps tell you to "eat more protein" or "sleep better." NutriRecall tells you *by how much*, *why it matters for you specifically*, and whether you're actually improving week over week, as it compares your weekly progress.
+it's like you have an assistant tracking your daily nutrition and giving you data backed answers cutreated with own data, and activities.
+ 
+It does this by combining a local SQLite health log with a RAG (Retrieval-Augmented Generation) pipeline — so the AI is always grounded in your actual data, not generic training knowledge.
+ 
+---
 ## Features
 
 | Feature | Description |
@@ -172,16 +181,6 @@ Scaled to 1–10. Protein score = actual ÷ target (weight × 1.6g/kg).
 # .env
 GROQ_API_KEY=gsk_your_key_here   # get free at console.groq.com
 ```
-
----
-
-## Resume / Interview Talking Points
-
-- **RAG pipeline** — not just an LLM call; retrieval + memory + live data context
-- **Persistent vector store** — ChromaDB `PersistentClient` survives kernel/server restarts
-- **Hybrid LLM deployment** — cloud and local switchable at runtime without code changes
-- **Proper data layer** — SQLite with UNIQUE constraint replacing error-prone CSV append
-- **Modular architecture** — `db.py`, `ai.py`, `app.py` fully separated by concern
 
 ---
 
