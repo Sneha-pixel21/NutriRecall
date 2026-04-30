@@ -46,21 +46,25 @@ It does this by combining a local SQLite health log with a RAG (Retrieval-Augmen
 ---
 ## Screenshots
 ### Dashboard
+> Visualises your weekly health score, protein intake against your personalised target, sleep average, and workout frequency.
 <p align="left">
   <img src="dashboard.png" width="500"/>
 </p>
 
 ### Daily Logging
+> Daily entry form capturing weight, protein, sleep, and workout status, with a 7-day context summary showing real-time health score and metric averages.
 <p align="left">
   <img src="daily log.png" width="500"/>
 </p>
 
 ### Ai Interface
+> Conversational interface with quick-start prompts and a data transparency panel showing the exact context being passed to the model.
 <p align="left">
   <img src="ai interface.png" width="500"/>
 </p>
 
 ### API vs local LLM
+> Sidebar toggle for switching between Groq API (cloud) and Ollama (local) inference backends, with corresponding API key input field.
 <p align="left">
   <img src="api vs local.png" width="500"/>
 </p>
