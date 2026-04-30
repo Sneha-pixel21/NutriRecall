@@ -18,8 +18,8 @@ You log your weight, protein, sleep, and workouts. NutriRecall scores your lifes
 
 ---
 ## 🚀 Demo
-<p align="center">
-  <img src="NutriRecall.gif" width="1000"/>
+<p align="left">
+  <img src="NutriRecall.gif" width="400"/>
 </p>
 
 ---
