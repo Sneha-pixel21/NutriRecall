@@ -17,7 +17,12 @@ NutriRecall is a full-stack health intelligence system that combines daily fitne
 You log your weight, protein, sleep, and workouts. NutriRecall scores your lifestyle, visualises your trends, and lets you ask an AI assistant questions like *"Why am I not gaining muscle?"* — which it answers using **your actual numbers**, not generic advice.
 
 ---
+## 🚀 Demo
+<p align="center">
+  <img src="demo/NuriRecall.gif" width="800"/>
+</p>
 
+---
 ## Features
 
 | Feature | Description |
@@ -30,7 +35,28 @@ You log your weight, protein, sleep, and workouts. NutriRecall scores your lifes
 | ⬇️ **Export** | Download all your data as CSV anytime |
 
 ---
+## Screenshots
+### 📊 Dashboard
+<p align="center">
+  <img src="demo/dashboard.png" width="700"/>
+</p>
 
+### 📝 Daily Logging
+<p align="center">
+  <img src="demo/daily log.png" width="700"/>
+</p>
+
+### 📅 Ai Interface
+<p align="center">
+  <img src="demo/ai interface.png" width="700"/>
+</p>
+
+### ✅API vs local LLM
+<p align="center">
+  <img src="demmo/api vs local.png" width="700"/>
+</p>
+
+---
 ## Architecture
 
 ```
