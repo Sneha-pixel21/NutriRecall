@@ -37,7 +37,7 @@ You log your weight, protein, sleep, and workouts. NutriRecall scores your lifes
 ---
 ## Screenshots
 ### 📊 Dashboard
-<p align="center">
+<p align="left">
   <img src="dashboard.png" width="500"/>
 </p>
 
