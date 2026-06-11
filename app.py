@@ -12,8 +12,6 @@ from utils.db import (
 )
 from utils.ai import compute_scores, generate_insights, nutrirecall_ai
 
-# ─── Page config ──────────────────────────────────────────────────────────────
-
 st.set_page_config(
     page_title="NutriRecall",
     page_icon="❤️",
@@ -29,7 +27,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ─── Sidebar — nav + settings ─────────────────────────────────────────────────
 
 with st.sidebar:
     st.title("❤️ NutriRecall")
@@ -58,12 +55,10 @@ with st.sidebar:
         csv_bytes = export_csv()
         st.download_button("⬇️ Export CSV", csv_bytes, "nutrirecall_export.csv", "text/csv")
 
-# ─── Shared data load + scoring ───────────────────────────────────────────────
 
 init_db()
 data = load_data()
 
-# ── Debug info (always visible so we can diagnose issues) ─────────────────────
 import sqlite3 as _sqlite3
 from pathlib import Path as _Path
 _db = _Path("data/health_logs.db")
@@ -86,7 +81,6 @@ if not data.empty:
         st.error(f"Error loading data: {e}")
         data = pd.DataFrame()
 
-# ─── Helper: week slices ──────────────────────────────────────────────────────
 
 def get_week(df, offset_weeks=0):
     today = pd.Timestamp(date.today())
@@ -95,9 +89,6 @@ def get_week(df, offset_weeks=0):
     mask  = (df["date"] >= start) & (df["date"] <= end)
     return df[mask]
 
-# ══════════════════════════════════════════════════════════════════════════════
-# PAGE 1 — DAILY LOG
-# ══════════════════════════════════════════════════════════════════════════════
 
 if page == "📥 Daily Log":
     st.header("📥 Daily Entry")
@@ -155,9 +146,7 @@ if page == "📥 Daily Log":
             score_color = "score-green" if hs >= 7 else ("score-amber" if hs >= 5 else "score-red")
             m4.metric("Health Score", f"{hs:.1f}/10")
 
-# ══════════════════════════════════════════════════════════════════════════════
-# PAGE 2 — DASHBOARD
-# ══════════════════════════════════════════════════════════════════════════════
+
 
 elif page == "📊 Dashboard":
     st.header("📊 Dashboard")
@@ -175,7 +164,7 @@ elif page == "📊 Dashboard":
         wo     = int(w7["workout"].sum())
         hs     = w7["health_score_10"].mean()
 
-        # ── Health score gauge ──
+       
         st.subheader("Health Score")
         fig_gauge = go.Figure(go.Indicator(
             mode="gauge+number",
@@ -196,7 +185,7 @@ elif page == "📊 Dashboard":
         fig_gauge.update_layout(height=260, margin=dict(t=20, b=20, l=40, r=40))
         st.plotly_chart(fig_gauge, use_container_width=True)
 
-        # ── KPI row ──
+        
         m1, m2, m3, m4 = st.columns(4)
         delta_p = round(avg_p - avg_pr, 1)
         m1.metric("Avg Protein (7d)", f"{avg_p:.0f}g", f"{delta_p:+.0f}g vs target")
@@ -206,7 +195,7 @@ elif page == "📊 Dashboard":
 
         st.divider()
 
-        # ── Weight trend ──
+        
         col_l, col_r = st.columns(2)
         with col_l:
             st.subheader("Weight progress")
@@ -243,7 +232,7 @@ elif page == "📊 Dashboard":
             )
             st.plotly_chart(fig_p, use_container_width=True)
 
-        # ── Sleep trend ──
+        
         st.subheader("Sleep quality")
         fig_s = go.Figure()
         fig_s.add_trace(go.Bar(
@@ -261,9 +250,7 @@ elif page == "📊 Dashboard":
         )
         st.plotly_chart(fig_s, use_container_width=True)
 
-# ══════════════════════════════════════════════════════════════════════════════
-# PAGE 3 — HISTORY
-# ══════════════════════════════════════════════════════════════════════════════
+
 
 elif page == "📅 History":
     st.header("📅 Log History")
@@ -321,9 +308,6 @@ elif page == "📅 History":
                 st.warning("Entry deleted.")
                 st.rerun()
 
-# ══════════════════════════════════════════════════════════════════════════════
-# PAGE 4 — WEEK COMPARE
-# ══════════════════════════════════════════════════════════════════════════════
 
 elif page == "🔄 Week Compare":
     st.header("🔄 Week-over-Week Comparison")
@@ -356,7 +340,7 @@ elif page == "🔄 Week Compare":
 
         st.divider()
 
-        # Grouped bar chart
+        
         fig = go.Figure()
         fig.add_trace(go.Bar(name="This week", x=labels, y=[round(v, 1) for v in this_vals],
                              marker_color="#6366f1"))
@@ -369,7 +353,7 @@ elif page == "🔄 Week Compare":
         )
         st.plotly_chart(fig, use_container_width=True)
 
-        # Day-by-day protein for this week
+        
         if not this_w.empty:
             st.subheader("This week — daily protein vs target")
             fig2 = go.Figure()
@@ -388,41 +372,32 @@ elif page == "🔄 Week Compare":
                                hovermode="x unified")
             st.plotly_chart(fig2, use_container_width=True)
 
-# ══════════════════════════════════════════════════════════════════════════════
-# PAGE 5 — AI ASSISTANT
-# ══════════════════════════════════════════════════════════════════════════════
 
 elif page == "✨ AI Assistant":
     st.header("✨ NutriRecall AI")
     st.caption("Personalised advice based on your actual health data.")
 
     if data.empty:
-        # Clear empty state — tell user exactly what to do
         st.info("📭 No data yet! Go to **📥 Daily Log** in the sidebar and save at least one entry. Then come back here.")
         st.stop()
 
-    # ── API key check (only when using Groq) ──────────────────────────────────
     if not use_local and not groq_key:
         st.warning("Paste your **Groq API Key** in the sidebar to use the AI. Get a free key at [console.groq.com](https://console.groq.com)")
         st.info("Or toggle **Use local Ollama model** in the sidebar if Ollama is installed.")
         st.stop()
 
-    # ── Context expander ──────────────────────────────────────────────────────
     with st.expander("📋 Data being sent to AI", expanded=False):
         st.code(generate_insights(data), language="text")
 
-    # ── Chat history ──────────────────────────────────────────────────────────
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
 
-    # Render existing messages
     for msg in st.session_state.chat_history:
         role   = msg["role"]
         avatar = "🧑" if role == "user" else "✨"
         with st.chat_message(role, avatar=avatar):
             st.markdown(msg["content"])
 
-    # ── Quick question buttons (only when chat is empty) ──────────────────────
     if not st.session_state.chat_history:
         st.markdown("**Try asking:**")
         qcols = st.columns(3)
@@ -436,7 +411,6 @@ elif page == "✨ AI Assistant":
                 st.session_state.pending_query = q
                 st.rerun()
 
-    # ── Chat input ────────────────────────────────────────────────────────────
     query = st.chat_input("Ask anything about your health data...")
 
     final_query = query
@@ -462,7 +436,6 @@ elif page == "✨ AI Assistant":
 
         st.session_state.chat_history.append({"role": "assistant", "content": response})
 
-    # ── Clear button ──────────────────────────────────────────────────────────
     if st.session_state.get("chat_history"):
         st.divider()
         if st.button("Clear conversation"):
