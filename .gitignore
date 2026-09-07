@@ -37,3 +37,19 @@ desktop.ini
 .idea/
 *.swp
 *.swo
+
+data/*.db 
+data/*.sqlite 
+data/*.sqlite3
+
+# ChromaDB/ vector store 
+chroma_db/
+
+# Streamlit 
+.streamlit/secrets.toml
+
+# OS / IDE 
+.DS_Store 
+Thumbs.db 
+.vscode/ 
+.idea/
