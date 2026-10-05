@@ -135,7 +135,8 @@ def generate_response(prompt: str, use_local: bool = False, groq_api_key: str = 
                 return "No GROQ_API_KEY found. Add it to your .env file or paste it in the sidebar."
             client = OpenAI(api_key=key, base_url="https://api.groq.com/openai/v1")
             response = client.chat.completions.create(
-                model="llama-3.1-8b-instant",
+                #model="llama-3.1-8b-instant",
+                model="openai/gpt-oss-20b",
                 messages=[{"role": "user", "content": prompt}],
             )
             return response.choices[0].message.content
