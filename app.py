@@ -8,7 +8,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 from utils.db import (
     init_db, load_data, insert_entry, delete_entry,
-    delete_last_entry, export_csv, entry_exists
+    export_csv
 )
 from utils.ai import compute_scores, generate_insights, nutrirecall_ai
 
@@ -59,21 +59,6 @@ with st.sidebar:
 init_db()
 data = load_data()
 
-import sqlite3 as _sqlite3
-from pathlib import Path as _Path
-_db = _Path("data/health_logs.db")
-with st.sidebar:
-    st.divider()
-    st.markdown("**Debug**")
-    st.caption(f"DB exists: {_db.exists()}")
-    st.caption(f"DB path: {_db.resolve() if _db.exists() else 'NOT FOUND'}")
-    st.caption(f"Rows in DB: {len(data)}")
-    if _db.exists():
-        with _sqlite3.connect(_db) as _con:
-            _rows = _con.execute("SELECT date, weight, protein FROM logs ORDER BY date DESC LIMIT 3").fetchall()
-        for _r in _rows:
-            st.caption(f"  {_r[0]} | {_r[1]}kg | {_r[2]}g")
-
 if not data.empty:
     try:
         data = compute_scores(data)
@@ -105,11 +90,13 @@ if page == "📥 Daily Log":
 
     workout = st.selectbox("Did you work out today?", ["No", "Yes"])
 
-    c1, c2 = st.columns([1, 5])
+    c1, c2 = st.columns([5, 1])
     with c1:
         if st.button("💾 Save Entry", use_container_width=True):
             if weight is None or protein is None or sleep is None:
                 st.error("Please fill in all fields before saving.")
+            elif weight <= 0:
+                st.error("Weight must be greater than zero. Protein and sleep may be zero.")
             else:
                 date_str = str(log_date)
                 ok = insert_entry(date_str, weight, protein, sleep, 1 if workout == "Yes" else 0)
@@ -119,11 +106,17 @@ if page == "📥 Daily Log":
                 else:
                     st.warning(f"An entry for {log_date} already exists. Go to History to edit it.")
     with c2:
-        if st.button("Delete Last Entry", use_container_width=True):
-            if data.empty:
-                st.warning("No entries to delete.")
-            else:
-                delete_last_entry()
+        delete_button = st.empty()
+        last_entry = None if data.empty else data.loc[data["id"].idxmax()]
+        confirm_last = False
+        if last_entry is not None:
+            confirm_last = st.checkbox(
+                f"Confirm deletion of {last_entry['date']:%Y-%m-%d} (last added entry)",
+                key=f"confirm_last_{int(last_entry['id'])}",
+            )
+        if delete_button.button("Delete Last Entry", disabled=not confirm_last, use_container_width=True):
+            if last_entry is not None:
+                delete_entry(int(last_entry["id"]))
                 st.warning("Last entry deleted.")
                 st.rerun()
 
@@ -156,7 +149,8 @@ elif page == "📊 Dashboard":
     else:
         w7 = get_week(data, offset_weeks=0)
         if w7.empty:
-            w7 = data.tail(7)
+            st.info("No entries in the last 7 days. Add a recent entry to see your dashboard.")
+            st.stop()
 
         avg_p  = w7["protein"].mean()
         avg_pr = w7["protein_required"].mean()
@@ -262,6 +256,7 @@ elif page == "📅 History":
         display["date"] = display["date"].dt.strftime("%Y-%m-%d")
         display["workout"] = display["workout"].map({1: "✅ Yes", 0: "❌ No"})
         display["health_score_10"] = display["health_score_10"].round(1)
+        display["protein_required"] = display["protein_required"].round(1)
         display = display.rename(columns={
             "date": "Date", "weight": "Weight (kg)", "protein": "Protein (g)",
             "sleep_hours": "Sleep (hrs)", "workout": "Workout",
@@ -286,24 +281,31 @@ elif page == "📅 History":
         selected_row = raw[raw["label"] == selected_label].iloc[0]
 
         ec1, ec2, ec3, ec4 = st.columns(4)
-        new_w  = ec1.number_input("Weight (kg)",  value=float(selected_row["weight"]), step=1.0)
-        new_p  = ec2.number_input("Protein (g)",  value=float(selected_row["protein"]), step=1.0)
-        new_sl = ec3.number_input("Sleep (hrs)",  value=float(selected_row["sleep_hours"]), step=1.0)
+        new_w  = ec1.number_input("Weight (kg)", min_value=0.0, value=float(selected_row["weight"]), step=1.0)
+        new_p  = ec2.number_input("Protein (g)", min_value=0.0, value=float(selected_row["protein"]), step=1.0)
+        new_sl = ec3.number_input("Sleep (hrs)", min_value=0.0, max_value=24.0, value=float(selected_row["sleep_hours"]), step=1.0)
         new_wo = ec4.selectbox("Workout", ["Yes", "No"],
                                index=0 if selected_row["workout"] == 1 else 1)
+        confirm_delete = st.checkbox(
+            f"Confirm deletion of {selected_row['date']:%Y-%m-%d}",
+            key=f"confirm_entry_{int(selected_row['id'])}",
+        )
 
         b1, b2, _ = st.columns([1, 1, 4])
         with b1:
             if st.button("💾 Save changes", use_container_width=True):
-                from utils.db import update_entry
-                update_entry(
-                    int(selected_row["id"]), new_w, new_p, new_sl,
-                    1 if new_wo == "Yes" else 0,
-                )
-                st.success("Entry updated!")
-                st.rerun()
+                if new_w <= 0:
+                    st.error("Weight must be greater than zero. Protein and sleep may be zero.")
+                else:
+                    from utils.db import update_entry
+                    update_entry(
+                        int(selected_row["id"]), new_w, new_p, new_sl,
+                        1 if new_wo == "Yes" else 0,
+                    )
+                    st.success("Entry updated!")
+                    st.rerun()
         with b2:
-            if st.button("Delete entry", use_container_width=True):
+            if st.button("Delete entry", disabled=not confirm_delete, use_container_width=True):
                 delete_entry(int(selected_row["id"]))
                 st.warning("Entry deleted.")
                 st.rerun()
@@ -312,18 +314,20 @@ elif page == "📅 History":
 elif page == "🔄 Week Compare":
     st.header("🔄 Week-over-Week Comparison")
 
-    if data.empty or len(data) < 2:
-        st.info("Add at least a few entries to compare weeks.")
+    if data.empty:
+        st.info("Add entries to compare weeks.")
     else:
         this_w = get_week(data, offset_weeks=0)
         last_w = get_week(data, offset_weeks=1)
+        if this_w.empty or last_w.empty:
+            st.info("Entries are needed in both 7-day periods to calculate changes. Missing data is not zero.")
 
         metrics = ["protein", "sleep_hours", "workout", "health_score_10"]
         labels  = ["Avg Protein (g)", "Avg Sleep (hrs)", "Workout Days", "Health Score"]
 
         def week_avg(df, col):
             if df.empty:
-                return 0.0
+                return None
             if col == "workout":
                 return float(df[col].sum())
             return float(df[col].mean())
@@ -334,17 +338,18 @@ elif page == "🔄 Week Compare":
         # Summary cards
         cols = st.columns(4)
         for i, (col, label, tv, lv) in enumerate(zip(cols, labels, this_vals, last_vals)):
-            delta = tv - lv
+            delta = None if tv is None or lv is None else tv - lv
             fmt = ".0f" if i in [0, 2] else ".1f"
-            col.metric(label, f"{tv:{fmt}}", f"{delta:+{fmt}} vs last week")
+            col.metric(label, "No data" if tv is None else f"{tv:{fmt}}",
+                       None if delta is None else f"{delta:+{fmt}} vs last week")
 
         st.divider()
 
         
         fig = go.Figure()
-        fig.add_trace(go.Bar(name="This week", x=labels, y=[round(v, 1) for v in this_vals],
+        fig.add_trace(go.Bar(name="This week", x=labels, y=[None if v is None else round(v, 1) for v in this_vals],
                              marker_color="#6366f1"))
-        fig.add_trace(go.Bar(name="Last week", x=labels, y=[round(v, 1) for v in last_vals],
+        fig.add_trace(go.Bar(name="Last week", x=labels, y=[None if v is None else round(v, 1) for v in last_vals],
                              marker_color="#a5b4fc"))
         fig.update_layout(
             barmode="group", height=350,
