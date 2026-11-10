@@ -53,3 +53,7 @@ chroma_db/
 Thumbs.db 
 .vscode/ 
 .idea/
+
+# Local evaluation artifacts and unfinished report
+/evaluation/
+/Minor Project Report/
