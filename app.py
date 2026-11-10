@@ -311,6 +311,8 @@ def render_assistant_result(result):
                 st.caption("Log values and coverage were rendered by code. No model or knowledge passages were used.")
             elif result["grounding"].get("selection_contract") == "source_units_v1":
                 st.caption("Text and food-list relationships come from source units. Valid indices do not prove relevance; model selection can still be wrong.")
+                if result["grounding"].get("model_issue_stage") == "evidence_selection":
+                    st.caption("model_issues are selection-stage notes, not final validation findings. Selection sees log-field names, not fresh values. rendered_log_field_status reports the values displayed locally; unavailable values remain unknown. review_issues records the optional model review, if run.")
             elif result["grounding"].get("support_review"):
                 st.caption("Citation/quote checks are mechanical. Model support review can still be wrong.")
             st.json(result["grounding"])

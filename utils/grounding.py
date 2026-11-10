@@ -606,9 +606,43 @@ def render_log_summary(summary, fields):
     return "\n\n".join(lines)
 
 
+def stated_age(question):
+    """Recognize an explicit first-person age, never infer it from logs/history."""
+    ages = re.findall(r"(?:^|[.!?]\s+)i\s*(?:am|'m|’m)\s+(\d{1,3})\b(?!\s*(?:kg|lbs?|cm)\b)", question.strip(), re.I)
+    return int(ages[0]) if len(set(ages)) == 1 and 18 <= int(ages[0]) <= 120 else None
+
+
+def age_context_lines(claims, evidence, question):
+    """Label a matching age group from selected source text; no health verdict."""
+    age = stated_age(question)
+    if age is None:
+        return []
+    lines = []
+    for source_id in dict.fromkeys(claim["source_id"] for claim in claims):
+        text = evidence[source_id]["text"].partition("Applies to:")[0]
+        groups = re.findall(r"(?:adults aged|ages)\s+(\d+)\s*[–-]\s*(\d+)", text, re.I)
+        matches = [f"{low}–{high}" for low, high in groups if int(low) <= age <= int(high)]
+        older = re.findall(r"ages\s+(\d+)\s+and (?:above|older)", text, re.I)
+        matches += [f"{low} and above" for low in older if age >= int(low)]
+        if len(matches) == 1:
+            lines.append(f"For your stated age of {age}, the applicable source age group is **{matches[0]} years**. [{source_id}]")
+    return lines
+
+
+def rendered_log_field_status(summary, rendered_fields):
+    """Describe code-rendered values without interpreting free-text model notes."""
+    if summary is None:
+        return {}
+    return {field: ("rendered" if field in ("reporting_window", "logged_dates", "coverage")
+                    or summary.get(field) is not None else "unavailable")
+            for field in rendered_fields}
+
+
 def render_source_guidance(claims, evidence, intent, question):
     """Source-derived text and list relationships; selection can still be wrong."""
     lines = render_selections(claims, evidence, intent)
+    if intent != "medical_boundary":
+        lines = age_context_lines(claims, evidence, question) + lines
     for source_id in dict.fromkeys(claim["source_id"] for claim in claims):
         source = evidence[source_id]
         if intent != "medical_boundary" and any(
@@ -741,12 +775,21 @@ def draft_and_review(question, matches, log_summary=None, history=None, *, revie
                 lines.append("The logs do not establish athlete status or an individual protein target. The cited athlete range remains general guidance.")
         else:
             lines.insert(0, "No personal log summary was supplied. Enable log sharing to include recorded figures and coverage.")
-    if review["follow_up"] and not (review["follow_up"] == "reporting_period" and not log_context):
+    follow_up = review["follow_up"]
+    if follow_up == "reporting_period" and (not log_context or "reporting_window" in rendered_fields):
+        follow_up = ""
+    if follow_up == "age" and stated_age(question) is not None:
+        follow_up = ""
+    if follow_up:
         lines.append(FOLLOW_UPS[review["follow_up"]])
     if not lines:
         lines = ["The supplied passages and log summary do not support an answer to that request."]
     return {"answer": "\n\n".join(lines), "claims": claims, "unknown_ids": unknown,
-            "mechanical_issues": issues, "review_issues": review["issues"],
+            "mechanical_issues": issues,
+            "review_issues": review["issues"] if review_evidence else [],
+            "model_issues": draft["issues"],
+            "model_issue_stage": "evidence_selection",
+            "rendered_log_field_status": rendered_log_field_status(log_summary, rendered_fields),
             "support_status": ("invalid_selection" if issues else
                                "extractive_selection_reviewed" if review_evidence else
                                "extractive_selection_unreviewed"),

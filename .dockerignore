@@ -1,0 +1,17 @@
+# Exclude everything by default.
+**
+
+# Allow only the files needed to build and run Streamlit.
+!Dockerfile
+!.dockerignore
+!requirements.txt
+!app.py
+
+!utils/
+!utils/*.py
+
+!knowledge_base/
+!knowledge_base/nutrition_v1.json
+
+!.streamlit/
+!.streamlit/config.toml

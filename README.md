@@ -54,6 +54,53 @@ If the repository and NTR environment already exist, skip cloning and environmen
 
 Open [http://localhost:8501/](http://localhost:8501/), or the URL printed by Streamlit if another port is selected. The app creates `data/health_logs.db`; it does not use the prototype CSV as its storage backend.
 
+## Local Docker development
+
+`Dockerfile` builds `nutrirecall:dev` from Python 3.11, installs CPU-only PyTorch before the project requirements, and runs Streamlit as the non-root `appuser`. The image listens on port 8501; Compose publishes it only at `127.0.0.1:8501`. The allowlist in `.dockerignore` excludes secrets, databases, health logs, notebooks, evaluation outputs and the unfinished report from the build context.
+
+Compose uses three external named volumes:
+
+| Volume | Container path | Purpose |
+|--------|----------------|---------|
+| `nutrirecall-dev-data` | `/app/data` | SQLite records |
+| `nutrirecall-dev-chroma` | `/app/chroma_db` | Local knowledge indexes |
+| `nutrirecall-dev-models` | `/home/appuser/.cache/huggingface` | Downloaded model cache (`HF_HOME`) |
+
+For a fresh local setup, create the external volumes; existing volumes are reused:
+
+```powershell
+# Create or reuse the persistent health-record volume.
+docker volume create nutrirecall-dev-data
+# Create or reuse the knowledge-index volume.
+docker volume create nutrirecall-dev-chroma
+# Create or reuse the model-cache volume.
+docker volume create nutrirecall-dev-models
+# Build the image and start the local service in the background.
+docker compose up --build -d
+```
+
+These volumes are separate from the original Windows data folder. The image does not include a Groq key or automatically load `.env`; cloud chat requires the key entered in the Streamlit sidebar. No cloud deployment has been performed.
+
+### Verification status
+
+The Docker results below were reported from user-run checks. They are distinct from mocked host tests and from real model acceptance.
+
+| Status | Check | Evidence or remaining work |
+|--------|-------|----------------------------|
+| ✅ | Docker startup and runtime | WSL2, Docker Desktop, Compose and hello-world passed; container reported Python 3.11.18, PyTorch 2.15.0+cpu and no CUDA build. `pip check` and core imports passed. |
+| ✅ | Tracking and SQLite persistence | Tracking UI, editing, Dashboard, Week Compare and export worked. A synthetic record survived container replacement and switching to Compose. A consistent SQLite backup returned integrity `ok`. |
+| ✅ | Container offline test baseline | 159 tests passed in 25.512 seconds with networking disabled and no health-data volumes or API keys attached. This run predates the retrieval-verification helper tests. |
+| ✅ | Updated container offline tests | User-run updated image passed all 168 tests in 17.640 seconds with networking disabled, read-only test/script mounts, no persistent health-data volumes and no API keys attached. This verifies offline behaviour, not live model quality. |
+| ✅ | Updated host offline tests | 168 tests passed on Windows with Hugging Face offline flags, including verification-helper safeguards and clarification/selection-note/age-group regressions. This does not establish live model quality or a new container test result. |
+| ✅ | Real MiniLM retrieval | User-run seed phase loaded CPU MiniLM with 384 normalized dimensions, checked all 16 passages and source metadata, retrieved the expected protein/sleep passages and rejected an unrelated spacecraft query. |
+| ✅ | Model-cache and Chroma persistence | A separate container with `--network none` and Hugging Face offline flags reopened the verification index without rebuilding it. Passage text/metadata, retrieved IDs and distances matched the seed run. This verifies the dedicated public test index, not Streamlit's end-to-end AI route. |
+| ⏳ | Container AI acceptance | User-run food, plant-follow-up, medical-boundary, activity-uncertainty and unrelated-request checks passed their stated manual checks with logs off in the confirmed sequence. Medical and activity each reported one selection stage; the unrelated request used no model. No retries were reported. The later mixed-log batch was a partial pass, as detailed below; broader reliability remains unverified. |
+| ⏳ | Deployment | Deferred. A future source-based deployment needs its own CPU-only dependency configuration; Dockerfile installation steps do not apply automatically. |
+
+`scripts/verify_retrieval.py` provides separate `seed` and `reopen` phases using only public passages. It uses `/app/chroma_db/retrieval_verification` in Docker, separate from the app's knowledge collection. Seed may download MiniLM; reopen opens the saved index without rebuilding it and compares source text, metadata and retrieval results. Run reopen in a fresh container with networking disabled and Hugging Face offline flags to test both persisted resources. This is a small integration check, not a grounding or clinical-safety evaluation. The helper is excluded from the runtime image by the build allowlist; mount it read-only when running this check.
+
+The successful offline reopen reported a blocked Hub lookup followed by use of the cached commit hash; model loading and retrieval completed. Neither verification phase used health-data volumes or LLM calls.
+
 ### AI setup and environment variables
 
 Open **AI settings & data sharing** in the sidebar to set the provider, key, log sharing and seven-day reporting window. Logs are included by default; disabling sharing starts a new conversation. The chat also works without health records. First use of chat retrieval may download MiniLM and initialize its local index; ordinary tracking pages do not load it.
@@ -99,6 +146,8 @@ Personal summaries report the exact window, logged dates and coverage; averages 
 
 For explicit mixed-log requests, a separate recorded-data block retains requested recorded-day figures and coverage even when the model omits log fields. General guidance remains separate; athlete status and personal targets are not established by these logs. The code does not calculate new personalized deficits or targets. Recognized requests for unavailable periods or statistics show the available coverage and explain the scope limitation instead of substituting current averages. Broader phrasing and the local reference gate remain imperfect; some questions still require clarification or an unnecessary resolution call. Review details record the route and model stages used.
 
+When the recorded-data block already shows the reporting window, a model-selected request for those dates is suppressed. Raw `model_issues` are labelled as selection-stage notes: selection sees field names, not fresh values. Code separately reports each displayed field as rendered or unavailable; it does not interpret or claim to resolve free-text model doubts. `review_issues` belongs to the optional explicit model review, not final factual verification. Explicit first-person adult ages can be matched to age groups in selected source text, without deciding whether sleep is healthy. Offline regressions cover these behaviours. A container protein recheck confirmed date-question suppression but exposed another misleading missing-values note; a subsequent user-run container sleep check confirmed the stage-labelled replacement, the correct age-group label, 7.1 recorded-day hours, 6/7 coverage and no redundant clarification. It reported one selection call and no retries. The answer remained verbose and indirect, so this is a focused behavioural check rather than complete conversational acceptance.
+
 In the AI Assistant sidebar, expand **Help & safety**, select **Sudden or unexplained weight loss**, then confirm **Show curated guidance**. This displays the existing cited warning without a model call or API key; cancellation leaves ordinary chat unchanged. This optional help is not automatic symptom detection or a general medical-safety system.
 
 Groq calls use a **10-second timeout setting per API call**, with automatic retries disabled. A multi-call answer can take longer overall; this is not a ten-second deadline for the complete conversation request. Timeouts show a retry message and do not reset rate limits. Local Ollama timeout behaviour is unchanged.
@@ -113,6 +162,9 @@ NutriRecall/
 ├── requirements.txt
 ├── .env.example
 ├── .streamlit/config.toml         # Streamlit visual theme
+├── Dockerfile                    # CPU-only local container image
+├── compose.yaml                  # Local service and external named volumes
+├── .dockerignore                 # Build-context allowlist
 ├── utils/
 │   ├── db.py                      # SQLite CRUD and CSV export
 │   ├── ai.py                      # Scoring, summaries and grounded generation
@@ -135,10 +187,12 @@ NutriRecall/
 │   ├── test_comparison.py          # Call counts and comparison safeguards
 │   ├── test_streamlit_rag.py       # Mocked Streamlit/RAG integration tests
 │   ├── test_request_flow.py        # Request routing and model-call checks
+│   ├── test_retrieval_verification.py # Offline verification-helper safeguards
 │   └── rag_cases.json             # 10 evaluation cases
 ├── assets/                        # Demo and screenshots
 ├── scripts/evaluate_rag.py         # Opt-in live evaluation with synthetic logs
 ├── scripts/compare_rag.py          # One-case single-selection vs review comparison
+├── scripts/verify_retrieval.py     # Real retrieval/index/cache integration check
 ├── evaluation/                    # Local evaluation outputs; not included in this checkpoint
 ├── data/                          # Local SQLite DB; existing health_logs.csv
 └── chroma_db/                     # Generated local vector stores
@@ -181,19 +235,43 @@ Verified against **saved notebook outputs**, not a new evaluation run:
 
 The current Python pipeline differs from the saved notebook baseline: indexed evidence selection is followed by code-based validation and rendering, rather than unrestricted health paraphrasing. Same-model review remains an explicitly requested evaluation option. The live runner records development cases, additional paraphrases, unrelated requests with synthetic logs, and session follow-ups. Outputs require manual assessment; neither a model review nor passing mock tests establish grounding quality. Evaluation scripts are included; their generated reports are not required to run the app or offline tests.
 
-**Live acceptance is partial.** Earlier local runs exposed relevance, completeness and provider failures. The current single-selection default, mixed-log retention and selective routing have offline verification only and have not been live revalidated. Historical reports are retained locally and are not shipped as reproducible acceptance evidence in this checkpoint. Source review status is rendered separately so the NHS qualification is retained.
+**Live acceptance is partial.** Earlier local runs exposed relevance, completeness and provider failures. Current user-run container checks supported food examples, supplement qualifications and citation support. The initial run had logs enabled, with no fresh summary sent or personal fields rendered. A repeated food question confirmed logs off in both the UI and diagnostics. Its subsequent plant-options follow-up selected only supported plant examples (beans, nuts and pulses), used contextual resolution followed by selection, and retained qualifications and the NHS review warning. A disease-specific prescription request was declined with a scope explanation and referral, without invented clinical details. An activity question preserved the supplied aerobic/strengthening guidance, explained the limitations of workout flags and asked for type, duration and intensity. An unrelated router request abstained without citations or personal figures and used no model. These cases passed their stated manual checks; duplicate food lists, extra qualified context and a less direct activity opening remain presentation limitations. The subsequent mixed-log batch below retained personal figures but exposed clarification and presentation issues; broader conversational reliability remains unverified. These few inspected cases do not establish general grounding reliability or clinical safety. Historical reports are retained locally and are not shipped as reproducible acceptance evidence in this checkpoint.
 
-**Next work:** finish remaining UI and AI acceptance checks, then learn Docker and prepare deployment. Live AI testing is currently paused. Recheck source review status before release.
+The code-rendered log-summary check also passed for the synthetic record dated 2026-11-10: 100 g protein and 8 hours sleep, matching the History row. The selected 2026-11-04–2026-11-10 window showed 1 of 7 days logged and 6 unknown days. Diagnostics reported no model stages, no fresh summary sent to a model and no retries. This checks one recorded-day summary, not mixed-log guidance.
+
+The subsequent mixed-log batch retained correct protein/sleep averages and coverage, kept athlete guidance qualified, and preserved sleep-quality uncertainty. The sleep question passed its stated checks. Protein and age-follow-up answers were partial passes: redundant date questions, misleading missing-data notes, and a failure to directly apply the stated age remained. A selected empty window correctly reported unavailable averages, 0/7 coverage and no model calls. The batch reported four model stages in total and no retries. The offline fixes above do not retrospectively change these live results.
+
+**Next work:** review and push the Git checkpoint, then finish the report and demo preparation. Current screenshots are saved. The focused container sleep recheck passed its stated behavioural checks; remaining answer brevity/directness limitations should be documented. Real public retrieval and offline cache/index reopening have passed the Docker smoke checks. Additional live API testing requires confirmation; deployment is deferred. Recheck source review status before release.
 
 ## Screenshots
 
-Existing screenshots illustrate the prototype and may differ from the latest UI.
+Current captures use fictional November records. The AI summary shown below is code-rendered and makes no model call. The dashboard Month view and the AI seven-day reporting window have different coverage denominators. Older prototype screenshots are retained separately below.
 
 ### Dashboard
 
 <p align="left">
-  <img src="assets/screenshots/dashboard.png" width="500"/>
+  <img src="assets/screenshots/dashboard-current-2026-11-11.png" width="500"/>
 </p>
+
+### Charts
+
+<p align="left">
+  <img src="assets/screenshots/charts-current-2026-11-11.png" width="500"/>
+</p>
+
+### History
+
+<p align="left">
+  <img src="assets/screenshots/history-current-2026-11-11.png" width="500"/>
+</p>
+
+### AI log summary
+
+<p align="left">
+  <img src="assets/screenshots/ai-summary-current-2026-11-11.png" width="500"/>
+</p>
+
+### Earlier prototype captures
 
 ### Daily Logging
 

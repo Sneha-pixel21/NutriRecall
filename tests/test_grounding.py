@@ -26,6 +26,60 @@ class GroundingTests(unittest.TestCase):
         self.assertNotIn("cures", result["answer"])
         self.assertIn("Claim not supported", result["review_issues"])
 
+    def test_selection_notes_keep_their_stage_separate_from_rendered_fields(self):
+        summary = ai.summarize_logs([dict(date="2026-11-10", protein=100,
+            weight=65, sleep_hours=8, workout=1)], "2026-11-10")
+        response = plan([self.claim], intent="mixed", follow_up="reporting_period",
+            issues=["missing logged values", "missing coverage", "Missing sleep quality data", "Claim not supported"])
+        with patch.object(g, "call_json", return_value=response) as call:
+            result = ai.generate_result("Compare my logged protein and weight with general guidance", self.matches, summary)
+        self.assertEqual(call.call_count, 1)
+        self.assertNotIn("Which reporting dates", result["answer"])
+        self.assertEqual(result["grounding"]["review_issues"], [])
+        self.assertEqual(result["grounding"]["model_issues"], response["issues"])
+        self.assertEqual(result["grounding"]["model_issue_stage"], "evidence_selection")
+        self.assertEqual(result["grounding"]["rendered_log_field_status"]["avg_protein_g"], "rendered")
+        self.assertFalse(result["log_usage"]["fresh_summary_sent_to_model"])
+
+    def test_unavailable_and_zero_values_have_distinct_render_status(self):
+        empty = ai.summarize_logs([], "2026-11-10")
+        fields = ["coverage", "avg_protein_g", "avg_sleep_hours"]
+        self.assertEqual(g.rendered_log_field_status(empty, fields),
+            {"coverage": "rendered", "avg_protein_g": "unavailable", "avg_sleep_hours": "unavailable"})
+        zeros = ai.summarize_logs([dict(date="2026-11-10", protein=0, sleep_hours=0, workout=0)], "2026-11-10")
+        self.assertTrue(all(value == "rendered" for value in g.rendered_log_field_status(zeros, fields).values()))
+        self.assertEqual(g.rendered_log_field_status(empty, []), {})
+        self.assertEqual(g.rendered_log_field_status(None, fields), {})
+
+    def test_optional_review_notes_are_not_mislabelled_selection_notes(self):
+        with patch.object(g, "call_json", side_effect=[
+            plan([self.claim], issues=["selection doubt"]),
+            plan([self.claim], issues=["review doubt"]),
+        ]) as call:
+            result = g.draft_and_review("Sleep advice?", self.matches, review_evidence=True)
+        self.assertEqual(call.call_count, 2)
+        self.assertEqual(result["model_issues"], ["selection doubt"])
+        self.assertEqual(result["review_issues"], ["review doubt"])
+
+    def test_stated_age_labels_selected_source_group_without_health_verdict(self):
+        sleep = next(doc for doc in self.docs if doc.metadata["id"] == "sleep_01")
+        claim = {"source_id": "sleep_01", "unit_index": 0, "item_indices": []}
+        for age, group in [(25, "18–60"), (60, "18–60"), (61, "61–64"),
+                           (64, "61–64"), (65, "65 and above")]:
+            with self.subTest(age=age), patch.object(g, "call_json", return_value=plan([claim], follow_up="age")) as call:
+                result = g.draft_and_review(f"I'm {age}. Does that prove my sleep is healthy?", [(sleep, .3)])
+            self.assertIn(f"**{group} years**. [sleep_01]", result["answer"])
+            self.assertIn("duration alone does not assess sleep quality", result["answer"])
+            self.assertNotIn("Which adult age group", result["answer"])
+            self.assertEqual(call.call_count, 1)
+
+    def test_age_label_never_uses_assistant_numbers_or_absent_evidence(self):
+        for text in ["My friend is 25", "If I am 25, what then?", "I'm not 25",
+                     "I am 25 kg", "I am 25. I am 65."]:
+            self.assertIsNone(g.stated_age(text))
+        evidence = g.build_units(rag.evidence_packet(self.matches))
+        self.assertEqual(g.age_context_lines([self.claim], evidence, "I am 25."), [])
+
     def test_review_can_restore_qualification_without_case_id(self):
         draft = plan([self.claim])
         corrected = plan([self.claim])

@@ -1,0 +1,21 @@
+services:
+  nutrirecall:
+    image: nutrirecall:dev
+    build: .
+    ports:
+      - "127.0.0.1:8501:8501"
+    volumes:
+      - health-data:/app/data
+      - chroma-data:/app/chroma_db
+      - model-cache:/home/appuser/.cache/huggingface
+
+volumes:
+  health-data:
+    external: true
+    name: nutrirecall-dev-data
+  chroma-data:
+    external: true
+    name: nutrirecall-dev-chroma
+  model-cache:
+    external: true
+    name: nutrirecall-dev-models
