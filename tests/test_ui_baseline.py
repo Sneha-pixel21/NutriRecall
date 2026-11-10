@@ -1,5 +1,6 @@
 """UI regression checks with mocked storage; never touch real health logs."""
 import unittest
+import json
 from datetime import date, timedelta
 from pathlib import Path
 from unittest.mock import patch
@@ -38,7 +39,7 @@ class BaselineUI(unittest.TestCase):
 
     def open(self, page):
         self.app.run(timeout=30)
-        self.app.radio[0].set_value(page).run(timeout=30)
+        self.app.sidebar.radio[0].set_value(page).run(timeout=30)
         self.assertEqual(len(self.app.exception), 0)
 
     def button(self, label):
@@ -69,6 +70,31 @@ class BaselineUI(unittest.TestCase):
         self.app.number_input[0].set_value(0.0)
         self.button("💾 Save changes").click().run()
         self.mocks["update_entry"].assert_not_called()
+
+    def test_history_hides_index_and_keeps_newest_date_first(self):
+        self.rows.append(self.row(2, date.today() - timedelta(days=2)))
+        self.open("📅 History")
+        table = self.app.dataframe[0]
+        self.assertTrue(json.loads(table.proto.columns)["_index"]["hidden"])
+        self.assertEqual(table.value["Date"].tolist(), [
+            str(date.today()), str(date.today() - timedelta(days=2)),
+        ])
+        self.mocks["update_entry"].assert_not_called()
+        self.mocks["delete_entry"].assert_not_called()
+
+    def test_dashboard_preserves_metrics_and_all_chart_series(self):
+        self.open("📊 Dashboard")
+        self.assertEqual([m.value for m in self.app.metric],
+                         ["100g", "124g", "6.0 hrs", "1 of 1 logged days"])
+        charts = [json.loads(c.proto.spec) for c in self.app.get("plotly_chart")]
+        self.assertEqual(len(charts), 4)
+        self.assertEqual(charts[0]["data"][0]["value"], 8.6)
+        self.assertEqual(charts[0]["data"][0]["gauge"]["axis"]["range"], [1, 10])
+        self.assertEqual([t["name"] for c in charts[1:] for t in c["data"]],
+                         ["Weight", "Protein (g)", "Target", "Sleep (hrs)"])
+        self.assertEqual(charts[3]["layout"]["shapes"][0]["y0"], 7)
+        self.assertEqual(len(charts[3]["data"][0]["y"]), 7)
+        self.assertEqual(sum(v is not None for v in charts[3]["data"][0]["y"]), 1)
 
     def test_history_delete_needs_confirmation(self):
         self.open("📅 History")
@@ -101,11 +127,90 @@ class BaselineUI(unittest.TestCase):
     def test_stale_dashboard_and_empty_pages(self):
         self.rows = [self.row(1, date.today() - timedelta(days=30))]
         self.open("📊 Dashboard")
+        self.assertEqual(len(self.app.metric), 4)
+        self.button("Go to current week").click().run()
         self.assertEqual(len(self.app.metric), 0)
-        self.assertIn("No entries in the last 7 days", self.app.info[0].value)
+        self.assertIn("No entries in this period", self.app.info[0].value)
         self.rows = []
         for page in ["📥 Daily Log", "📊 Dashboard", "📅 History", "🔄 Week Compare", "✨ AI Assistant"]:
             self.open(page)
+        self.open("📊 Dashboard")
+        self.app.radio(key="dashboard_period").set_value("All time").run()
+        self.assertTrue(any("All time: no recorded dates" in m.value for m in self.app.markdown))
+        self.assertIn("No entries yet", self.app.info[0].value)
+        self.assertFalse(any(d.key == "dashboard_picker" for d in self.app.date_input))
+        self.assertFalse(self.button("Go to current week").disabled)
+
+    def test_dashboard_calendar_navigation_and_empty_period_controls(self):
+        self.rows = [self.row(1, date(2024, 1, 31)), self.row(2, date(2024, 2, 29))]
+        self.open("📊 Dashboard")
+        self.assertTrue(any("26 Feb 2024 – 03 Mar 2024" in m.value for m in self.app.markdown))
+        self.button("Next →").click().run()
+        self.assertEqual(len(self.app.metric), 0)
+        self.assertFalse(self.button("← Previous").disabled)
+        self.assertTrue(any(d.key == "dashboard_picker" for d in self.app.date_input))
+        self.button("← Previous").click().run()
+        self.assertEqual(len(self.app.metric), 4)
+        self.app.radio(key="dashboard_period").set_value("Month").run()
+        self.assertTrue(any("01 Feb 2024 – 29 Feb 2024" in m.value for m in self.app.markdown))
+        self.button("← Previous").click().run()
+        self.assertTrue(any("01 Jan 2024 – 31 Jan 2024" in m.value for m in self.app.markdown))
+        self.app.date_input(key="dashboard_picker").set_value(date(2024, 2, 20)).run()
+        self.assertTrue(any("01 Feb 2024 – 29 Feb 2024" in m.value for m in self.app.markdown))
+        self.app.radio(key="dashboard_period").set_value("Year").run()
+        charts = [json.loads(c.proto.spec) for c in self.app.get("plotly_chart")]
+        self.assertEqual(len(charts[1]["data"][0]["y"]), 12)
+        self.app.radio(key="dashboard_period").set_value("All time").run()
+        self.assertEqual(self.app.metric[3].value, "2 of 2 logged days")
+        self.assertFalse(any(d.key == "dashboard_picker" for d in self.app.date_input))
+        self.button("Go to current week").click().run()
+        self.assertEqual(self.app.radio(key="dashboard_period").value, "Week")
+        self.assertEqual(self.app.date_input(key="dashboard_picker").value, date.today())
+
+    def test_dashboard_metrics_and_charts_share_filter_with_zeros(self):
+        outside = self.row(1, date(2024, 1, 31))
+        outside.update(weight=200., protein=999., sleep_hours=20.)
+        zero = self.row(2, date(2024, 2, 26))
+        zero.update(protein=0., sleep_hours=0., workout=0)
+        self.rows = [outside, zero, self.row(3, date(2024, 2, 29))]
+        self.open("📊 Dashboard")
+        self.assertEqual([m.value for m in self.app.metric],
+                         ["50g", "124g", "3.0 hrs", "1 of 2 logged days"])
+        charts = [json.loads(c.proto.spec) for c in self.app.get("plotly_chart")]
+        self.assertEqual(charts[0]["data"][0]["value"], 4.8)
+        self.assertEqual(charts[1]["data"][0]["y"], [77.4, None, None, 77.4, None, None, None])
+        self.assertEqual(charts[2]["data"][0]["y"], [0., None, None, 100., None, None, None])
+        self.assertTrue(any("Coverage: 2 of 7" in c.value for c in self.app.caption))
+        self.app.radio(key="dashboard_period").set_value("Year").run()
+        self.assertEqual(self.app.metric[0].value, "366g")
+        self.assertEqual(self.app.metric[3].value, "2 of 3 logged days")
+
+    def test_dashboard_future_navigation_limits(self):
+        self.rows = [self.row(1, date.today() - timedelta(days=400))]
+        self.open("📊 Dashboard")
+        self.button("Go to current week").click().run()
+        for mode in ["Week", "Month", "Year"]:
+            with self.subTest(mode=mode):
+                self.app.radio(key="dashboard_period").set_value(mode).run()
+                self.assertTrue(self.button("Next →").disabled)
+                self.assertEqual(self.app.date_input(key="dashboard_picker").max, date.today())
+                self.assertFalse(any("future dates" in c.value for c in self.app.caption))
+                self.assertEqual(len(self.app.warning), 0)
+                self.button("← Previous").click().run()
+                self.assertFalse(self.button("Next →").disabled)
+                self.button("Next →").click().run()
+                self.assertTrue(self.button("Next →").disabled)
+        self.app.date_input(key="dashboard_picker").set_value(date.today()).run()
+        self.assertEqual(len(self.app.exception), 0)
+
+    def test_dashboard_future_record_default_is_capped_without_changing_storage(self):
+        self.rows = [self.row(1, date.today() + timedelta(days=20))]
+        self.open("📊 Dashboard")
+        self.assertEqual(self.app.date_input(key="dashboard_picker").value, date.today())
+        self.assertTrue(self.button("Next →").disabled)
+        self.assertEqual(len(self.app.warning), 0)
+        self.mocks["insert_entry"].assert_not_called()
+        self.mocks["delete_entry"].assert_not_called()
 
 
 if __name__ == "__main__":

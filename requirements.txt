@@ -7,3 +7,7 @@ chromadb>=0.5
 openai>=1.0
 python-dotenv>=1.0
 nbformat>=5.9
+streamlit>=1.64
+sentence-transformers>=6.1
+langchain-chroma>=1.1
+langchain-huggingface>=1.2.3

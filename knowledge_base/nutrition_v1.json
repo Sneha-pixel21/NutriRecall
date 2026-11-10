@@ -1,0 +1,194 @@
+[
+  {
+    "id": "protein_01",
+    "topic": "protein",
+    "title": "Protein and exercise recovery",
+    "text": "Dietary protein supplies amino acids used to maintain and repair muscle. Adequate intake supports adaptation to exercise; protein alone does not replace training. Applies to: Adults exercising; especially athletes. Limitations: Does not establish why a particular person is failing to gain muscle.",
+    "source": {
+      "name": "National Institutes of Health, Office of Dietary Supplements — Dietary Supplements for Exercise and Athletic Performance: Health Professional Fact Sheet",
+      "url": "https://ods.od.nih.gov/factsheets/ExerciseAndAthleticPerformance-HealthProfessional/",
+      "section": "Protein",
+      "checked_on": "2026-10-10"
+    }
+  },
+  {
+    "id": "protein_02",
+    "topic": "protein",
+    "title": "Athlete protein intake range",
+    "text": "NIH ODS reports athlete guidance of 1.2–2.0 grams of protein per kilogram of body weight per day to support training adaptations and repair. Requirements depend on context; this is not a universal minimum. Applies to: Athletes; not a universal target for all adults. Limitations: Do not use as a disease-specific diet or extrapolate automatically to non-athletes.",
+    "source": {
+      "name": "National Institutes of Health, Office of Dietary Supplements — Dietary Supplements for Exercise and Athletic Performance: Health Professional Fact Sheet",
+      "url": "https://ods.od.nih.gov/factsheets/ExerciseAndAthleticPerformance-HealthProfessional/",
+      "section": "Protein / Implications for use",
+      "checked_on": "2026-10-10"
+    }
+  },
+  {
+    "id": "protein_03",
+    "topic": "protein",
+    "title": "Food sources of protein",
+    "text": "Protein-containing foods include eggs, dairy, fish, meat, poultry, beans and nuts. Athletes can increase intake through food; supplements are an option when needed, not automatically necessary. Applies to: Adults seeking general food information. Limitations: No serving-size protein values, allergy assessment or tailored meal plan is provided.",
+    "source": {
+      "name": "National Institutes of Health, Office of Dietary Supplements — Dietary Supplements for Exercise and Athletic Performance: Health Professional Fact Sheet",
+      "url": "https://ods.od.nih.gov/factsheets/ExerciseAndAthleticPerformance-HealthProfessional/",
+      "section": "Protein / Implications for use",
+      "checked_on": "2026-10-10"
+    }
+  },
+  {
+    "id": "protein_04",
+    "topic": "protein",
+    "title": "Protein distribution and timing",
+    "text": "The fact sheet discusses distributing protein every 3–5 hours around training. Evidence on narrowly timed pre- or post-workout intake is mixed; missing an immediate protein drink does not establish failed recovery. Applies to: Athletes and resistance-training adults. Limitations: Daily protein totals in NutriRecall cannot establish meal timing.",
+    "source": {
+      "name": "National Institutes of Health, Office of Dietary Supplements — Dietary Supplements for Exercise and Athletic Performance: Health Professional Fact Sheet",
+      "url": "https://ods.od.nih.gov/factsheets/ExerciseAndAthleticPerformance-HealthProfessional/",
+      "section": "Protein / Efficacy; Protein / Implications for use",
+      "checked_on": "2026-10-10"
+    }
+  },
+  {
+    "id": "sleep_01",
+    "topic": "sleep",
+    "title": "Adult sleep duration by age",
+    "text": "CDC recommends at least 7 hours daily for adults aged 18–60, 7–9 hours for ages 61–64, and 7–8 hours for ages 65 and above. Sleep recommendations change with age. Applies to: Adults; age-specific ranges. Limitations: Ask age before selecting an age-specific range; duration alone does not assess sleep quality.",
+    "source": {
+      "name": "Centers for Disease Control and Prevention — About Sleep",
+      "url": "https://www.cdc.gov/sleep/about/",
+      "section": "Getting enough sleep",
+      "checked_on": "2026-10-10"
+    }
+  },
+  {
+    "id": "sleep_02",
+    "topic": "sleep",
+    "title": "Practical sleep habits",
+    "text": "Helpful habits include consistent bed and wake times, a quiet and cool bedroom, switching off devices 30 minutes before bed, avoiding late caffeine, and avoiding large meals or alcohol near bedtime. Applies to: Adults seeking general sleep-habit guidance. Limitations: These habits are general guidance, not treatment for a sleep disorder.",
+    "source": {
+      "name": "Centers for Disease Control and Prevention — About Sleep",
+      "url": "https://www.cdc.gov/sleep/about/",
+      "section": "What to do",
+      "checked_on": "2026-10-10"
+    }
+  },
+  {
+    "id": "sleep_03",
+    "topic": "sleep",
+    "title": "Sleep hours versus sleep quality",
+    "text": "Healthy sleep involves refreshing, uninterrupted rest, not just enough hours. Difficulty falling asleep, repeated waking, or tiredness despite sufficient sleep can indicate poor quality. Applies to: Adults. Limitations: NutriRecall records hours, not awakenings or daytime symptoms; do not infer these from a duration value.",
+    "source": {
+      "name": "Centers for Disease Control and Prevention — About Sleep",
+      "url": "https://www.cdc.gov/sleep/about/",
+      "section": "Sleep quality",
+      "checked_on": "2026-10-10"
+    }
+  },
+  {
+    "id": "sleep_04",
+    "topic": "sleep",
+    "title": "Persistent sleep problems",
+    "text": "Recurring sleep difficulties or symptoms of a sleep disorder warrant discussion with a healthcare provider. A sleep diary can support assessment; testing may be needed to identify a disorder. Applies to: Adults with recurring sleep problems. Limitations: Do not diagnose insomnia or sleep apnea from logs.",
+    "source": {
+      "name": "Centers for Disease Control and Prevention — About Sleep",
+      "url": "https://www.cdc.gov/sleep/about/",
+      "section": "Management",
+      "checked_on": "2026-10-10"
+    }
+  },
+  {
+    "id": "activity_01",
+    "topic": "physical_activity",
+    "title": "What counts as physical activity",
+    "text": "Physical activity includes movement during travel, household tasks, work and leisure—not only gym workouts. Walking, cycling and sports are examples. Applies to: Adults. Limitations: A workout flag does not capture all daily movement.",
+    "source": {
+      "name": "World Health Organization — Physical activity",
+      "url": "https://www.who.int/news-room/fact-sheets/detail/physical-activity",
+      "section": "Overview",
+      "checked_on": "2026-10-10"
+    }
+  },
+  {
+    "id": "activity_02",
+    "topic": "physical_activity",
+    "title": "Adult aerobic activity recommendations",
+    "text": "For substantial health benefits, WHO recommends 150–300 minutes of moderate aerobic activity weekly, or 75–150 minutes of vigorous activity, or an equivalent combination. Applies to: Adults aged 18–64. Limitations: Workout days alone do not establish minutes or intensity; this is not a personalized training plan.",
+    "source": {
+      "name": "World Health Organization, Regional Office for Europe — Physical activity",
+      "url": "https://www.who.int/europe/news-room/fact-sheets/item/physical-activity",
+      "section": "Physical activity recommendations / Adults (aged 18–64 years)",
+      "checked_on": "2026-10-10"
+    }
+  },
+  {
+    "id": "activity_03",
+    "topic": "physical_activity",
+    "title": "Adult muscle-strengthening recommendations",
+    "text": "WHO also recommends moderate-or-higher-intensity muscle-strengthening activity involving the major muscle groups on at least two days weekly for additional health benefits. Applies to: Adults aged 18–64. Limitations: This health recommendation is not a guarantee of muscle gain. A workout flag does not identify strengthening activity.",
+    "source": {
+      "name": "World Health Organization, Regional Office for Europe — Physical activity",
+      "url": "https://www.who.int/europe/news-room/fact-sheets/item/physical-activity",
+      "section": "Physical activity recommendations / Adults (aged 18–64 years)",
+      "checked_on": "2026-10-10"
+    }
+  },
+  {
+    "id": "activity_04",
+    "topic": "physical_activity",
+    "title": "Some activity is better than none",
+    "text": "WHO emphasizes that some physical activity is better than none, all activity counts, and sedentary time should be limited. Missing the full recommendation does not make smaller amounts worthless. Applies to: Adults. Limitations: Do not infer sedentary time from the absence of a logged workout.",
+    "source": {
+      "name": "World Health Organization — Physical activity",
+      "url": "https://www.who.int/news-room/fact-sheets/detail/physical-activity",
+      "section": "How much physical activity is recommended?",
+      "checked_on": "2026-10-10"
+    }
+  },
+  {
+    "id": "weight_01",
+    "topic": "healthy_weight_gain",
+    "title": "Gradual adult weight gain",
+    "text": "NHS suggests gradual weight gain; adults could try around 300–500 additional calories daily. This is general guidance for gaining weight, not a calculated personal calorie target. Applies to: Adults for whom gaining weight is appropriate. Limitations: Do not recommend gaining weight automatically. NutriRecall lacks height and calorie intake. Source review warning: Last reviewed 2023-03-28; next review due 2026-03-28, overdue when checked on 2026-10-10. Recheck before release; do not imply a newer review.",
+    "source": {
+      "name": "National Health Service — Healthy ways to gain weight",
+      "url": "https://www.nhs.uk/live-well/healthy-weight/managing-your-weight/healthy-ways-to-gain-weight/",
+      "section": "Tips to help you gain weight / Do",
+      "checked_on": "2026-10-10"
+    }
+  },
+  {
+    "id": "weight_02",
+    "topic": "healthy_weight_gain",
+    "title": "Practical food additions",
+    "text": "Smaller, more frequent meals and snacks can help. Nuts, seeds and cheese can add calories; beans, pulses, eggs, fish and lean meat provide protein. Keep meals varied across food groups. Applies to: Adults for whom gaining weight is appropriate. Limitations: Food suggestions require attention to preferences and allergies; no personalized menu is supplied. Source review warning: Last reviewed 2023-03-28; next review due 2026-03-28, overdue when checked on 2026-10-10. Recheck before release; do not imply a newer review.",
+    "source": {
+      "name": "National Health Service — Healthy ways to gain weight",
+      "url": "https://www.nhs.uk/live-well/healthy-weight/managing-your-weight/healthy-ways-to-gain-weight/",
+      "section": "Tips to help you gain weight / Do",
+      "checked_on": "2026-10-10"
+    }
+  },
+  {
+    "id": "weight_03",
+    "topic": "healthy_weight_gain",
+    "title": "Food-first weight-gain habits",
+    "text": "Do not depend on cakes, chocolate and sugary drinks for weight gain. Avoid filling up on drinks immediately before meals if this reduces how much you eat. Applies to: Adults for whom gaining weight is appropriate. Limitations: Does not support excluding foods categorically or prescribing restrictive eating. Source review warning: Last reviewed 2023-03-28; next review due 2026-03-28, overdue when checked on 2026-10-10. Recheck before release; do not imply a newer review.",
+    "source": {
+      "name": "National Health Service — Healthy ways to gain weight",
+      "url": "https://www.nhs.uk/live-well/healthy-weight/managing-your-weight/healthy-ways-to-gain-weight/",
+      "section": "Tips to help you gain weight / Don't",
+      "checked_on": "2026-10-10"
+    }
+  },
+  {
+    "id": "weight_04",
+    "topic": "healthy_weight_gain",
+    "title": "Unexplained weight loss needs assessment",
+    "text": "Speak with a doctor about sudden weight loss, loss without diet or activity changes, or using food control to cope with distress. These may reflect an underlying condition. Applies to: Adults experiencing sudden or unexplained weight loss or food-related distress. Limitations: Do not explain sudden weight loss as simply inadequate protein; logs cannot diagnose its cause. Source review warning: Last reviewed 2023-03-28; next review due 2026-03-28, overdue when checked on 2026-10-10. Recheck before release; do not imply a newer review.",
+    "source": {
+      "name": "National Health Service — Healthy ways to gain weight",
+      "url": "https://www.nhs.uk/live-well/healthy-weight/managing-your-weight/healthy-ways-to-gain-weight/",
+      "section": "Non-urgent advice: Speak to a GP if:",
+      "checked_on": "2026-10-10"
+    }
+  }
+]
